@@ -47,6 +47,7 @@ import numpy as np
 ```{code-cell} ipython3
 # votre code
 df = pd.read_csv('data/objects-on-the-moon.csv')
+print(df.shape)
 df
 ```
 
@@ -56,8 +57,7 @@ df
 
 ```{code-cell} ipython3
 # votre code
-df.drop(axis = 1, labels=0)
-
+df.drop(df.columns[0], axis=1)
 ```
 
 ```{raw-cell}
@@ -67,6 +67,7 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+df.info
 ```
 
 5. 1. utilisez la méthode `dropna` des dataframes pour supprimer *en place* les colonnes qui ont toutes leurs valeurs manquantes  
@@ -75,6 +76,8 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+df.dropna(axis=1, how='all', inplace=True)
+df
 ```
 
 6. 1. affichez la ligne d'`index` $88$, que remarquez-vous ?
@@ -84,6 +87,9 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+print(df.loc[88])
+df.dropna(axis=0, how='all', inplace=True)
+df
 ```
 
 7. 1. utilisez l'attribut `dtypes` des dataframes pour voir le type de vos colonnes
@@ -91,6 +97,8 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+df.dtypes
+#elle est en type object
 ```
 
 8. 1. utilisez la méthode `unique` des `Series`pour en regarder le contenu de la colonne des masses
@@ -98,6 +106,8 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+df['Mass (lb)'].unique()
+#certaines valeurs ont des chevrons
 ```
 
 9. 1. conservez la colonne `'Mass (lb)'` d'origine  
@@ -109,6 +119,10 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+df['Mass (lb) orig'] = df['Mass (lb)'].copy()
+df['Mass (lb)'] = pd.to_numeric(df['Mass (lb)'])
+df['Mass (lb)'].dtypes
+#df['Mass (lb)'].isna().sum()
 ```
 
 10. 1. cette solution ne vous satisfait pas, vous ne voulez perdre aucune valeur  
@@ -127,6 +141,12 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+
+df['Mass (lb) orig'] = df['Mass (lb) orig'].str.replace("<","")
+df['Mass (lb) orig'] = df['Mass (lb) orig'].str.replace(">","")
+df['Mass (lb) orig'] = df['Mass (lb) orig'].astype('int64')
+
+#je ne comprends pas le message d'erreur : Can only use .str accessor with string values!, le principe de l'accesseur est de pouvoir utiliser les méthodes mêmes sans type str?
 ```
 
 11. 1. sachant `1 kg = 2.205 lb`  
@@ -135,6 +155,8 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+df['Mass (kg)']=df['Mass (lb) orig'].copy()
+df['Mass (kg)'].astype('float64')/2.205
 ```
 
 12. 1. Quels sont les pays qui ont laissé des objets sur la lune ?
@@ -143,6 +165,10 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+df['Status'].unique()
+masque = df['Status'].isin(['Landed', 'Intentionally crashed', 'Crashed','Crashed (post-mission)','Landed[87]', 'Crashed[92][93]','Intentionally crashed[94]','Crashed[96]'])
+df['Country'][masque].unique()
+df['Country'][masque].value_counts(normalize=True)*100
 ```
 
 13. 1. quel est le poids total des objets sur la lune en kg ?
@@ -150,6 +176,9 @@ df.drop(axis = 1, labels=0)
 
 ```{code-cell} ipython3
 # votre code
+masse_tot=df.loc[masque, 'Mass (kg)'].sum()
+masse_etatsunis=df.loc[(masque) & (df['Country'] == 'United States'), 'Mass (kg)'].sum()
+masse_etatsunis, masse_tot
 ```
 
 14. 1. quel pays a laissé l'objet le plus léger ?  
@@ -162,6 +191,7 @@ voyez les méthodes `Series.idxmin()` et `Series.argmin()`
 
 ```{code-cell} ipython3
 # votre code
+df['Country'][df['Mass (kg)'].idxmin()]
 ```
 
 15. 1. y-a-t-il un Memorial sur la lune ?  
@@ -172,6 +202,8 @@ voyez les méthodes `Series.idxmin()` et `Series.argmin()`
 
 ```{code-cell} ipython3
 # votre code
+df[df['Artificial object'].str.contains('Memorial')]['Country']
+#je crois que j'ai encore un souci avec str
 ```
 
 16. 1. faites la liste Python des objets sur la lune  
@@ -179,6 +211,7 @@ voyez les méthodes `Series.idxmin()` et `Series.argmin()`
 
 ```{code-cell} ipython3
 # votre code
+df['Artificial object'].tolist()
 ```
 
 ***
